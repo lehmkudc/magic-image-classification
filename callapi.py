@@ -10,9 +10,12 @@ from time import clock
 import timeit
 import imagehash as ih
 
+def CardFileName( set_name, card_number ):
+    fname = 'images/' + set_name + '_' + str(card_number) + '.png'
+    return fname
 
 def CallImage( set_name , card_number ):
-    if os.path.isfile('images/' + set_name + '_' + str(card_number) + '.png'):
+    if os.path.isfile(CardFileName(set_name, card_number)):
         pass
     else:
         base = "https://img.scryfall.com/cards/png/en/"
