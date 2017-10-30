@@ -9,10 +9,15 @@ from scipy import misc, ndimage
 from time import clock
 import timeit
 import imagehash as ih
+import pyodbc
 
 def CardFileName( set_name, card_number ):
     fname = 'images/' + set_name + '_' + str(card_number) + '.png'
     return fname
+
+def CardName( set_name, card_number ):
+    cname = set_name + '_' + str(card_number)
+    return cname
 
 def CallImage( set_name , card_number ):
     if os.path.isfile(CardFileName(set_name, card_number)):
@@ -96,11 +101,33 @@ def HashImage( im ):
 
 set_name = 'kld'
 card_number = 3
+card_row = 100
+
+server = 'SQL2016TRAINING'
+database = 'magic_images'
+table = 'data_v1'
+#conn = pyodbc.connect('DRIVER={SQL SERVER};SERVER=.\'+server+';DATABASE ='+database+';Trusted_Connection = yes')
+conn = pyodbc.connect('DRIVER={SQL Server};SERVER=.\SQL2016TRAINING;DATABASE=magic_images;Trusted_Connection=yes')
+cursor = conn.cursor()
+
+t0 = timeit.default_timer()
+cursor.execute( 'DELETE FROM ' +database+'.dbo.'+table)
 
 CallImage(set_name, card_number)
 im = PullImage(set_name, card_number)
-im1 = DirtyImage(im)
-iph = HashImage(im1)
-print( iph )
+t1 = timeit.default_timer()
+for i in range(card_row):
+    im1 = DirtyImage(im)
+    iph = HashImage(im1)
+    ipha = np.append( iph, "'" + set_name + "_" + str(card_number) + "'" )
+    query = 'INSERT INTO '+database+'.dbo.'+table+' VALUES ('+",".join(ipha.astype(str))+')'
+    cursor.execute(query)
 
+cursor.commit()
+t2 = timeit.default_timer()
+print( t1-t0 )
+print( t2-t1 )
+
+#print( d_card.head() )
+#d_card.to_csv('images/test.csv' )
 #os.remove( 'images/' + set_name + '_' + str(card_number) + '.png' )
