@@ -6,7 +6,7 @@ import os
 from io import BytesIO
 from numpy import random
 from scipy import misc, ndimage
-from time import clock
+from time import clock, sleep
 import timeit
 import imagehash as ih
 import pyodbc
@@ -28,6 +28,10 @@ def CallImage( set_name , card_number ):
         im = Image.open(BytesIO(requests.get(card_url).content))
         im.save( 'images/' + set_name + '_' + str(card_number) + '.png')
         print( "Called API")
+
+def RemoveImage( set_name, card_number ):
+    if os.path.isfile(CardFileName(set_name, card_number)):
+        os.remove( CardFileName(set_name, card_number) )
 
 def PullImage( set_name , card_number ):
     im = Image.open( 'images/' + set_name + '_' + str(card_number) + '.png' )
@@ -81,53 +85,86 @@ def addsaltpepper(im):
     return im1
 
 def DirtyImage( im ):
+    t1 = timeit.default_timer()
     im1 = np.copy(im[:,:,:])
+    tcopy = timeit.default_timer(); print( 'copy time: ' + str(tcopy-t1) )
     for i in range( int( random.uniform(0, 20) ) ):
         im1 = addline(im1)
+    tline = timeit.default_timer(); print( 'line time: ' + str(tline-tcopy) )
     for i in range( int( random.uniform(0, 20) ) ):
         im1 = addcircle(im1)
+    tcirc = timeit.default_timer(); print( 'circ time: ' + str(tcirc-tline) )
     im1 = addsaltpepper(im1)
+    tsalt = timeit.default_timer(); print( 'salt time: ' + str(tsalt-tline) )
     im1 = ndimage.filters.median_filter( im1, int(random.exponential(3)+1))
+    tmedi = timeit.default_timer(); print( 'medi time: ' + str(tmedi-tsalt) )
     im1 = ndimage.filters.gaussian_filter( im1, random.exponential(2))
+    tgaus = timeit.default_timer(); print( 'gaus time: ' + str(tgaus-tmedi) )
     im1 = ndimage.rotate( im1, random.uniform(-5,5) )
+    trota = timeit.default_timer(); print( 'rota time: ' + str(trota-tgaus) )
     return im1
 
 def HashImage( im ):
+    # Convert a numpy array image into a hash, convert the hexidecimal into integers
     ph = ih.phash(Image.fromarray(im[:,:,:]))
     vint = np.vectorize(int)
     iph = vint(np.array(list(str(ph))).astype(str),16)
     return iph
 
-
-set_name = 'kld'
-card_number = 3
-card_row = 100
-
+#===========================================================================================
+# Connect to SQL Server with pyodbc. Because I'm terrible at python, i cant quite get quotes
+#   to stop escaping the '/' in the SQL query so I can call server, database, and table separately.
 server = 'SQL2016TRAINING'
 database = 'magic_images'
 table = 'data_v1'
 #conn = pyodbc.connect('DRIVER={SQL SERVER};SERVER=.\'+server+';DATABASE ='+database+';Trusted_Connection = yes')
-conn = pyodbc.connect('DRIVER={SQL Server};SERVER=.\SQL2016TRAINING;DATABASE=magic_images;Trusted_Connection=yes')
-cursor = conn.cursor()
 
 t0 = timeit.default_timer()
+conn = pyodbc.connect('DRIVER={SQL Server};SERVER=.\SQL2016TRAINING;DATABASE=magic_images;Trusted_Connection=yes')
+tconn = timeit.default_timer(); print( 'conn time: ' + str(tconn-t0) )
+cursor = conn.cursor()
+
+# Delete all data in the current SQL Server. This is only needed when the data generating process
+#   changes significantly. I would like to make a log of what sets have what data so I dont have 
+#   to constantly delete generated data at some point.
 cursor.execute( 'DELETE FROM ' +database+'.dbo.'+table)
+tdelete = timeit.default_timer(); print( 'dele time: ' + str(tdelete - tconn) )
+#==============================================================================================
 
-CallImage(set_name, card_number)
-im = PullImage(set_name, card_number)
-t1 = timeit.default_timer()
-for i in range(card_row):
-    im1 = DirtyImage(im)
-    iph = HashImage(im1)
-    ipha = np.append( iph, "'" + set_name + "_" + str(card_number) + "'" )
-    query = 'INSERT INTO '+database+'.dbo.'+table+' VALUES ('+",".join(ipha.astype(str))+')'
-    cursor.execute(query)
+#==============================================================================================
+# The big script that creates data. I will likely change a lot of this to be class-based when
+#   I get comfortable enough with OOP python.
 
-cursor.commit()
-t2 = timeit.default_timer()
-print( t1-t0 )
-print( t2-t1 )
+# I am currently only working with the kaladesh expansion, which is 274 cards.
 
+card_row = 1   #How many rows per card image do I want?
+dt = pd.DataFrame( columns = ['conn','dele','call','pull','copy','line',
+                              'circ','salt','medi','gaus','rota','drty','hash'])
+
+for j in range(1):
+    t0 = timeit.default_timer()
+    set_name = 'kld'
+    card_number = j + 1
+    CallImage(set_name, card_number)
+    tcall = timeit.default_timer(); print( 'call time: ' + str(tcall-t0) )
+    im = PullImage(set_name, card_number)
+    tpull = timeit.default_timer(); print( 'pull time: ' + str(tpull-tcall) )
+    for i in range(card_row):
+        t0 = timeit.default_timer()
+        im1 = DirtyImage(im)
+        tdirty = timeit.default_timer(); print( 'drty time: ' + str(tdirty-t0) )
+        iph = HashImage(im1)
+        thash = timeit.default_timer(); print( 'hash time: ' + str(thash-tdirty))
+        ipha = np.append( iph, "'" + set_name + "_" + str(card_number) + "'" )
+        query = 'INSERT INTO '+database+'.dbo.'+table+' VALUES ('+",".join(ipha.astype(str))+')'
+        cursor.execute(query)
+
+    cursor.commit()
+    print( CardName(set_name, card_number) + ' is finished' )
+
+
+#RemoveImage(set_name, card_number)
+#Roughly 9 seconds to dirty an image.
 #print( d_card.head() )
 #d_card.to_csv('images/test.csv' )
 #os.remove( 'images/' + set_name + '_' + str(card_number) + '.png' )
