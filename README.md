@@ -31,3 +31,11 @@ A: Scryfall API: https://scryfall.com/docs/api
 
 ### Q: Gah this is a mess! How do you even run this thing?
 A: Sorry I'm pretty new to this software development thing, as I'm just used to making jury-rigged scripts as final products. Right now running the data_generation.py script is how you run everything I have setup and working.
+
+### Q: You mentioned a proof of concept? Where/What is this?
+A: As a capstone project for my deep learning class, my old roommate and I worked together to classify images from the Kaladesh expansion. As far as POC's go this was quite effective despite all the glaring mistakes and lazy programming we did. We managed to get 99.9% accuracy of our test dataset (which was still simulated so its not really that impressive), though we plugged in like 3 images taken via iphone and they were classified correctly as part of our presentation so we were pretty happy with that. Also it's done entirey by jupyter notebook so its not quite "run" able. I'll probably clean it up eventually so everyone can point and laugh at how bad my python programming and organization was.  
+GitHub Link: https://github.com/lehmkudc/Card-Image-Classifications-with-NN
+Submitted Report: https://docs.google.com/document/d/1Tgr4ey50NkHicyu2NtYWG_PBR5sh2KAL23ARAN48a_4/edit?usp=sharing
+
+
+Thank you for taking the time to look over my work on this independent project of mine. If you want to ask me questions about it or about me, please email me at LEHMKUDC@gmail.com.
