@@ -5,6 +5,9 @@ Created on Tue Nov  7 15:51:36 2017
 @author: Dustin
 """
 
+
+# Dropbox\My Dropbox\Stat Work\magic-image-classification
+
 import numpy as np
 import pandas as pd
 import pyodbc
@@ -21,7 +24,7 @@ cursor = conn.cursor()
 # Delete all data in the current SQL Server. This is only needed when the data generating process
 #   changes significantly. I would like to make a log of what sets have what data so I dont have 
 #   to constantly delete generated data at some point.
-cursor.execute( 'DELETE FROM ' +database+'.dbo.'+table)
+# cursor.execute( 'DELETE FROM ' +database+'.dbo.'+table)
 
 
 card_row = 100   #How many rows per card image do I want?
