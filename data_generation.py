@@ -37,7 +37,7 @@ for j in range(274):
     im = gf.PullImage(set_name, card_number)
     for i in range(card_row):
         im1 = gf.DirtyImage(im)
-        iph = gf.HashImage(im1)
+        iph = gf.d_reshape(im1)
         ipha = np.append( iph, "'" + set_name + "_" + str(card_number) + "'" )
         query = 'INSERT INTO '+database+'.dbo.'+table+' VALUES ('+",".join(ipha.astype(str))+')'
         cursor.execute(query)

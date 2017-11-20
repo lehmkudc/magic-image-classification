@@ -22,6 +22,8 @@ def CardName( set_name, card_number ):
     return cname
 
 def CallImage( set_name , card_number ):
+    # Call the Scryfall API for a png image if it is not currently saved in the
+    #       image folder
     if os.path.isfile(CardFileName(set_name, card_number)):
         pass
     else:
@@ -32,10 +34,12 @@ def CallImage( set_name , card_number ):
         print( "Called API")
 
 def RemoveImage( set_name, card_number ):
+    # Delete an image from the image folder
     if os.path.isfile(CardFileName(set_name, card_number)):
         os.remove( CardFileName(set_name, card_number) )
 
 def PullImage( set_name , card_number ):
+    # Pull an image from the images folder and give it as a np.array
     im = Image.open( 'images/' + set_name + '_' + str(card_number) + '.png' )
     im = np.array(im)[:,:,0:3]
     return im
@@ -50,6 +54,7 @@ def line( x0, y0, x1, y1):
     return x,y
 
 def addline( im ):
+    # Add a scratch mark to a np.array image.
     thick = int( np.random.uniform( 1, im.shape[1]/100) )
     color = random.randint(2,size = 1)[0]*np.array((255,255,255))
     x0 = int(np.random.uniform( 0, im.shape[0]-1 ))
@@ -67,6 +72,7 @@ def addline( im ):
     return(im1)
 
 def addcircle( im ):
+    # Adds a smudge to a np.array image
     r = int( np.random.uniform( 1, im.shape[1]/50))
     color = random.randint(2,size = 1)[0]*np.array((255,255,255))
     a = int(np.random.uniform( 0, im.shape[0] ))
@@ -79,6 +85,7 @@ def addcircle( im ):
     return(im1)
 
 def addsaltpepper(im):
+    # Adds a layer of salt and pepper noise to a np.array
     prob = np.random.uniform( 0, 0.01)
     rnd = np.random.rand(im.shape[0], im.shape[1])
     im1 = im.copy()
@@ -87,6 +94,8 @@ def addsaltpepper(im):
     return im1
 
 def DirtyImage( im ):
+    # An assembly of filters and objects to add to an np.array image to 
+    #       randomly produce a new, dirtier image. Outputs as a np.array
     im1 = np.copy(im[:,:,:])
     for i in range( int( random.uniform(0, 20) ) ):
         im1 = addline(im1)
@@ -104,3 +113,12 @@ def HashImage( im ):
     vint = np.vectorize(int)
     iph = vint(np.array(list(str(ph))).astype(str),16)
     return iph
+
+
+def d_reshape( im, width = 84, length = 117):
+    # Reshape the np.array image into a pre-determined size and into a 1D array
+    im1 = Image.fromarray(im)
+    rm1 = im1.resize( (84, 117), Image.ANTIALIAS )
+    arm1 = np.array(rm1)
+    fm1 = np.reshape(arm1, 117*84*3)
+    return fm1
