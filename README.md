@@ -14,6 +14,9 @@ A: Magic the Gathering is a trading card game developed by Wizards of the Coast 
 
 ![Here's a Magic Card](https://img.scryfall.com/cards/small/en/m10/146.jpg?1510053183)
 
+### Q: What does one of your dirty images look like?
+A: [Here's one](C:/Users/Dustin/Desktop/dirty-image.png)
+
 ### Q: Why address this project at all? Doesn't TCGPlayer already have a fairly sucessful app that does pretty much this?
 A: Yes, but this project is not for selling. I'm doing this project for a number of reasons:  
 -- I'm building a portfolio for employment.   
