@@ -1,7 +1,10 @@
 # magic-image-classification
 
 ## At a glance Status:
-The basic script of generating data is writen and appears to work fine. I still need to get a device to run it for ~7 hours to get my training data setup and deposited into SQL. If possible I would like to make my image generating function more efficient, as it is easily the largest bottleneck in the code clocking in at ~2 seconds per card image I'm trying to dirty. Granted its much faster than the proof of concept project from a year ago since im not messing with os commands too much.
+1 Dec 2017
+After realizing how much of a dunce I was for trying to cram everything into an array every iteration, I replaced a bunch of that process with appending to lists instead which dramatically shortened how long it takes to make a dataset. That said, I still havent made it since interviews or whatever were happening and I've been busy and away from my desktop.
+I pitched the SQL data addition since there really isnt a point to it anymore. NPZ files are really what I should be using and I will need to find another project to show my SQL skills.
+~14 seconds per 100 card images.
 
 ### Q: What is this project about?
 A: My goal is to generate procedurally generated noise for Magic the Gathering cards as a training set for a machine learning model that classfifies them.
@@ -23,8 +26,13 @@ A: Yes, but this project is not for selling. I'm doing this project for a number
 ### Q: Why are you generating your image data?
 A: This is sort of the point of this project. Obtaining hundreds or thousands of pictures of each card isnt particularly reasonable with the resources I have available. However this could also extend to other image modeling problems where obtaining a significant amount of data from the process you are hoping to model is simply not possible. There has been some precident for biology applications where a research group [I'll post the link when I find it again] used image processing to make an image appear as though it were percieved thorugh a microsope. While that was a much more targeted application of data generation through image processing, this project is intended to be an experiment to see how well my simulated dataset can model camera photos. I do recognize the large issue of creating a model using a fundamentally different data generaiton process as the training set. The end goal for this project is general ability to classify images, it really doesnt have to be perfect.
 
+### Q: Why are you converting pictures into thumbnails before saving? Doesn't that negate the effects of your data generation?
+A: That's sort of the goal. The noise generation is to imiate the effects of taking a photo on an iphone and letting the model train with that variation. Aside from data storage concerns, the neural net computation time still scales off of predictors pretty heavily. At least until a proof of concept model is out, I will stick with thumbnails for speed and ease of debugging.
+
 ### Q: Why are you storing your images as hashes instead of numpy arrays? We have image pocessing packages and have a large library of computer vision modeling to work with.
-A: I'm broke and just dont have the storage space for that. Not only that, but since this project is an excuse to get comfortable interfacing python and SQL, I really dont want to have to design a 700 by 500 pixel database with the knowledgebase that I have. My budget is literally 0, and my personal devices have 4gb of storage left between the two. Let's just call this process another experiment. As this project develops and more resources are available, this is probably the first structural change I'll be addressing.
+A: I'm not anymore! The package is expired anyway. Since I found out why my code was running so slowly in the past, I can both handle and store actual images now with minimal effort.
+
+Old A: I'm broke and just dont have the storage space for that. Not only that, but since this project is an excuse to get comfortable interfacing python and SQL, I really dont want to have to design a 700 by 500 pixel database with the knowledgebase that I have. My budget is literally 0, and my personal devices have 4gb of storage left between the two. Let's just call this process another experiment. As this project develops and more resources are available, this is probably the first structural change I'll be addressing.
 
 ### Q: Where are you getting your initial image data?
 A: Scryfall API: https://scryfall.com/docs/api
