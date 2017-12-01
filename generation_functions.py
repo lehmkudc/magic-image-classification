@@ -11,7 +11,8 @@ import os
 from io import BytesIO
 from numpy import random
 from scipy import ndimage
-import imagehash as ih
+import timeit
+#import imagehash as ih
 
 def CardFileName( set_name, card_number ):
     fname = 'images/' + set_name + '_' + str(card_number) + '.png'
@@ -43,6 +44,16 @@ def PullImage( set_name , card_number ):
     im = Image.open( 'images/' + set_name + '_' + str(card_number) + '.png' )
     im = np.array(im)[:,:,0:3]
     return im
+
+def s_PullImage( set_name , card_number ):
+    # Pull an image from the images folder and give it as a np.array
+    t0 = timeit.default_timer()
+    im = Image.open( 'images/' + set_name + '_' + str(card_number) + '.png' )
+    topen = timeit.default_timer(); sopen = topen - t0
+    im = np.array(im)[:,:,0:3]
+    tarra = timeit.default_timer(); sarra = tarra - topen
+    times = np.array( (sopen, sarra) )
+    return [im,times]
 
 def s_plot(img):
     Image.fromarray(img).show()
@@ -102,10 +113,32 @@ def DirtyImage( im ):
     for i in range( int( random.uniform(0, 20) ) ):
         im1 = addcircle(im1)
     im1 = addsaltpepper(im1)
-    im1 = ndimage.filters.median_filter( im1, int(random.exponential(3)+1))
+    #im1 = ndimage.filters.median_filter( im1, int(random.exponential(3)+1))
     im1 = ndimage.filters.gaussian_filter( im1, random.exponential(1))
-    im1 = ndimage.rotate( im1, random.uniform(-2.5, 2.5) )
+    #im1 = ndimage.rotate( im1, random.uniform(-2.5, 2.5) )
+    im1 = np.array(Image.fromarray(im1).rotate(random.uniform(-2.5,2.5)))
     return im1
+
+def s_DirtyImage( im ):
+    t0 = timeit.default_timer()
+    im1 = np.copy(im[:,:,:])
+    tcopy = timeit.default_timer(); scopy = tcopy - t0
+    for i in range( int( random.uniform(0, 20) ) ):
+        im1 = addline(im1)
+    tline = timeit.default_timer(); sline = tline - tcopy
+    for i in range( int( random.uniform(0, 20) ) ):
+        im1 = addcircle(im1)
+    tcirc = timeit.default_timer(); scirc = tcirc - tline
+    im1 = addsaltpepper(im1)
+    tsalt = timeit.default_timer(); ssalt = tsalt - tcirc
+    #im1 = ndimage.filters.median_filter( im1, int(random.exponential(3)+1))
+    im1 = ndimage.filters.gaussian_filter( im1, random.exponential(1))
+    tgaus = timeit.default_timer(); sgaus = tgaus - tsalt
+    #im1 = ndimage.rotate( im1, random.uniform(-2.5, 2.5) )
+    im1 = np.array(Image.fromarray(im1).rotate(random.uniform(-2.5,2.5)))
+    trota = timeit.default_timer(); srota = trota - tgaus
+    times = np.array( (scopy, sline, scirc, ssalt, sgaus, srota) )
+    return [im1, times]
 
 def HashImage( im ):
     # Convert a numpy array image into a hash, convert the hexidecimal into integers
@@ -118,7 +151,8 @@ def HashImage( im ):
 def d_reshape( im, width = 84, length = 117):
     # Reshape the np.array image into a pre-determined size and into a 1D array
     im1 = Image.fromarray(im)
-    rm1 = im1.resize( (84, 117), Image.ANTIALIAS )
+    rm1 = im1.resize( (width, length), Image.ANTIALIAS )
     arm1 = np.array(rm1)
-    fm1 = np.reshape(arm1, 117*84*3)
-    return fm1
+    arm1 = arm1[None,:,:,:]
+    #fm1 = np.reshape(arm1, 117*84*3)
+    return arm1
